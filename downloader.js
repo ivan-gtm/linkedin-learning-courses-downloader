@@ -166,14 +166,20 @@ const LinkedInLearningDownloader = () => {
             // Get course full name
             const courseTitle = makeFileSystemSafe(decodeHTML(await page.$eval('.classroom-nav__details h1', el => el.textContent.trim())))
             
+            // Click on each collapsed chapter to expand them
+            const collapsedChapters = await page.$$('.classroom-toc-chapter--collapsed')
+            for(const collapsedChapter of collapsedChapters) {
+                await collapsedChapter.click()
+            }
             // Store the chapter/lesson tree structure
-            const HTMLStructure = await page.evaluate(() => [...document.querySelectorAll('section.classroom-toc-section')]
+
+            const HTMLStructure = await page.evaluate(() => [...document.querySelectorAll('.classroom-toc-chapter')]
                 .map((chapter, chapterId) => ({
-                    title: chapter.querySelector('span.classroom-toc-section__toggle-title').innerHTML,
+                    title: chapter.querySelector('.classroom-toc-chapter__toggle-title').innerHTML,
                     lessons: [...chapter.querySelectorAll('.classroom-toc-item__link')]
                         .map(lesson => ({
                             url: lesson.href,
-                            title: lesson.querySelector('.classroom-toc-item__title').textContent
+                            title: lesson.querySelector('.classroom-toc-item__title').childNodes[1].textContent
                         }))
                 }))
             )
